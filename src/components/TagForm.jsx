@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { TextField, Button, CircularProgress, Typography, Box, Switch, FormControlLabel } from '@mui/material';
 import TagList from './TagList';
 import SelectedTags from './SelectedTags';
@@ -13,10 +13,11 @@ const TagForm = () => {
     const [selectedTags, setSelectedTags] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const [includePredefinedTags, setIncludePredefinedTags] = useState(true);
+    const [includePredefinedTags, setIncludePredefinedTags] = useState(false);
     const [subtasks, setSubtasks] = useState([]);
+    const [autoSuggest, setAutoSuggest] = useState(false);
 
-    const fetchTagSuggestions = async () => {
+    const fetchTagSuggestions = useCallback(async () => {
         setLoading(true);
         setError(null);
 
@@ -31,7 +32,7 @@ const TagForm = () => {
                 },
                 body: JSON.stringify({
                     model: 'llama3.1',
-                    prompt: `Title: ${title}\nDescription: ${description}\n${subtasksString}\n${predefinedTagsString}\nGive me comma-separated, single-word tags about the given topic, including subtasks if really provided. Suggest only the most relevant tags. The tags you suggest will be used in Software Project Management tools. NEVER make any statements. Do not go beyond this prompt and do not explain why you should not. You are a software project management professional with extensive experience in identifying and categorizing key issues in various software development projects. You specialize in creating concise and relevant tags that effectively capture the essence of a project's focus, scope, and related technologies. **Only suggest predefined tags if there is a clear and direct connection. Otherwise, do not use predefined tags at all.** All tags MUST be single words and lowercase`,
+                    prompt: `Title: ${title}\nDescription: ${description}\n${subtasksString}\n${predefinedTagsString}\nGive me comma-separated, single-word tags about the given topic, including subtasks if provided. Suggest only the most relevant tags. The tags you suggest will be used in Software Project Management tools. NEVER make any statements. Do not go beyond this prompt and do not explain why you should not. You are a software project management professional with extensive experience in identifying and categorizing key issues in various software development projects. You specialize in creating concise and relevant tags that effectively capture the essence of a project's focus, scope, and related technologies. **Only suggest predefined tags if there is a clear and direct connection. Otherwise, do not use predefined tags at all.** All tags MUST be single words and lowercase`,
                     stream: false
                 }),
             });
@@ -48,7 +49,19 @@ const TagForm = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [title, description, subtasks, includePredefinedTags]);
+
+    useEffect(() => {
+        if (autoSuggest) {
+            const debounceTimer = setTimeout(() => {
+                if (description || subtasks.length > 0) {
+                    fetchTagSuggestions();
+                }
+            }, 1000);
+
+            return () => clearTimeout(debounceTimer);
+        }
+    }, [description, subtasks, autoSuggest, fetchTagSuggestions]);
 
     const handleTagClick = (tag) => {
         setSelectedTags((prev) =>
@@ -118,25 +131,33 @@ const TagForm = () => {
                 onSubtaskRemove={handleSubtaskRemove}
                 onSubtaskChange={handleSubtaskChange}
             />
-            <FormControlLabel
-                control={<Switch checked={includePredefinedTags} onChange={(e) => setIncludePredefinedTags(e.target.checked)} />}
-                label="Önceki Tagleri Dahil Et"
-            />
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2, mb: 2 }}>
+                <FormControlLabel
+                    control={<Switch checked={includePredefinedTags} onChange={(e) => setIncludePredefinedTags(e.target.checked)} />}
+                    label="Önceki Tagleri Dahil Et"
+                />
+                <FormControlLabel
+                    control={<Switch checked={autoSuggest} onChange={(e) => setAutoSuggest(e.target.checked)} />}
+                    label="Otomatik Öneri"
+                />
+            </Box>
             <PredefinedTagList
                 predefinedTags={predefinedTags}
                 selectedTags={selectedTags}
                 onTagClick={handleTagClick}
             />
-            <Button
-                variant="contained"
-                color="primary"
-                fullWidth
-                onClick={fetchTagSuggestions}
-                disabled={loading}
-                sx={{ mt: 2, mb: 2 }}
-            >
-                {loading ? <CircularProgress size={24} color="inherit" /> : 'Tag Önerilerini Al'}
-            </Button>
+            {!autoSuggest && (
+                <Button
+                    variant="contained"
+                    color="primary"
+                    fullWidth
+                    onClick={fetchTagSuggestions}
+                    disabled={loading}
+                    sx={{ mt: 2, mb: 2 }}
+                >
+                    {loading ? <CircularProgress size={24} color="inherit" /> : 'Tag Önerilerini Al'}
+                </Button>
+            )}
             {error && <Typography color="error">{error}</Typography>}
             <TagList
                 tags={suggestedTags}
