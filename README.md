@@ -69,6 +69,7 @@ Bu komut, projeyi varsayılan olarak `http://localhost:5173` adresinde başlatı
   │   ├── PredefinedTagList.js # Önceden tanımlanmış taglerin listesini gösterir
   │   ├── TagList.js           # Önerilen tagleri liste halinde gösterir
   │   ├── SelectedTags.js      # Seçilen taglerin listesini gösterir
+  │   ├── SubtaskList.js       # Alt görevleri yönetmek için bileşen
   ├── /data
   │   └── predefinedTags.js    # Önceden tanımlanmış tagleri barındıran veri dosyası
   ├── App.js                   # Ana uygulama bileşeni
