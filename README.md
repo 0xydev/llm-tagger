@@ -45,7 +45,7 @@ Bu proje, **Ollama API** üzerinden çalışmaktadır. Bu yüzden Ollama'nın si
     ```
 
 İndirme tamamlandıktan sonra uygulamayı kapatmayın. Modelin çalıştığı terminali kapatabilirsiniz. Arkaplanda çalıştığına emin olmak için aşağıdaki porta bakabilirsiniz.:
-    ```bash
+    ```
         http://localhost:11434/
     ```
 
