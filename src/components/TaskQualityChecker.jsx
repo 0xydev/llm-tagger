@@ -145,7 +145,7 @@ Ensure that the response is a valid JSON object and nothing else. Do not include
     return (
         <Box sx={{ maxWidth: 800, margin: '20px auto' }}>
             <Paper elevation={3} sx={{ padding: 3 }}>
-                <Typography variant="h4" gutterBottom>
+                <Typography variant="h5" gutterBottom align={"center"}>
                     Görev Kalite Kontrolü
                 </Typography>
                 <Button
